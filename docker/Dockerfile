@@ -20,6 +20,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-pip \
     python3-setuptools \
     python3-wheel \
+    libportaudio2 \
+    libportaudio2-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app directory
