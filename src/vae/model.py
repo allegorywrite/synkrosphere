@@ -1,15 +1,15 @@
 """
 VAE (Variational Autoencoder) モデル定義
+高品質なVAEモデルをAntixK/PyTorch-VAEから統合
 """
 
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from .models.vanilla_vae import VanillaVAE
 
-class VAE(nn.Module):
+class VAE:
     """
-    Variational Autoencoder モデル
-    画像生成のための基本的なVAEモデル
+    Variational Autoencoder モデルのラッパークラス
+    AntixK/PyTorch-VAEの高品質な実装を使用
     """
     
     def __init__(self, input_dim=3, img_size=256, latent_dim=64):
@@ -19,70 +19,33 @@ class VAE(nn.Module):
             img_size: 入力画像サイズ (正方形を想定)
             latent_dim: 潜在空間の次元数
         """
-        super(VAE, self).__init__()
+        self.model = VanillaVAE(
+            in_channels=input_dim,
+            latent_dim=latent_dim,
+            hidden_dims=[32, 64, 128, 256, 512]
+        )
         
         self.input_dim = input_dim
         self.img_size = img_size
         self.latent_dim = latent_dim
-        
-        self.encoder = nn.Sequential(
-            nn.Conv2d(input_dim, 32, kernel_size=4, stride=2, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1),
-            nn.ReLU(),
-            nn.Flatten()
-        )
-        
-        self.fc_mu = nn.Linear(256 * (img_size // 16) * (img_size // 16), latent_dim)
-        self.fc_logvar = nn.Linear(256 * (img_size // 16) * (img_size // 16), latent_dim)
-        
-        self.decoder_input = nn.Linear(latent_dim, 256 * (img_size // 16) * (img_size // 16))
-        
-        self.decoder = nn.Sequential(
-            nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1),
-            nn.ReLU(),
-            nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1),
-            nn.ReLU(),
-            nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1),
-            nn.ReLU(),
-            nn.ConvTranspose2d(32, input_dim, kernel_size=4, stride=2, padding=1),
-            nn.Sigmoid()  # 出力を[0,1]に正規化
-        )
     
     def encode(self, x):
         """入力画像を潜在ベクトルにエンコード"""
-        h = self.encoder(x)
-        mu = self.fc_mu(h)
-        logvar = self.fc_logvar(h)
-        return mu, logvar
-    
-    def reparameterize(self, mu, logvar):
-        """再パラメータ化トリック"""
-        std = torch.exp(0.5 * logvar)
-        eps = torch.randn_like(std)
-        z = mu + eps * std
-        return z
+        mu, log_var = self.model.encode(x)
+        return mu, log_var
     
     def decode(self, z):
         """潜在ベクトルから画像を生成"""
-        h = self.decoder_input(z)
-        h = h.view(-1, 256, self.img_size // 16, self.img_size // 16)
-        return self.decoder(h)
+        return self.model.decode(z)
     
     def forward(self, x):
         """順伝播"""
-        mu, logvar = self.encode(x)
-        z = self.reparameterize(mu, logvar)
-        return self.decode(z), mu, logvar
+        result = self.model.forward(x)
+        return result[0], result[2], result[3]
     
     def sample(self, num_samples, device='cuda'):
         """潜在空間からランダムサンプリング"""
-        z = torch.randn(num_samples, self.latent_dim).to(device)
-        return self.decode(z)
+        return self.model.sample(num_samples, current_device=device)
     
     def interpolate(self, z1, z2, steps=10):
         """2つの潜在ベクトル間を補間"""
