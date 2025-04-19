@@ -1,0 +1,125 @@
+
+app:
+  name: "Synkrosphere"
+  version: "0.1.0"
+  log_level: "INFO"
+
+hardware:
+  audio:
+    device: "default"  # オーディオ入力デバイス
+    interface: "FOCUSRITE Scarlett Solo (gen. 4)"
+    sample_rate: 44100
+    buffer_size: 2048
+    channels: 2
+  
+  midi:
+    device: "default"  # MIDIコントローラデバイス
+  
+  display:
+    width: 1920
+    height: 1080
+    fullscreen: false
+
+vae:
+  model_path: "models/vae_model.pt"
+  latent_dim: 64
+  image_size: 256
+  fps: 60
+  
+  personas:
+    - name: "ochiai"
+      display_name: "落合陽一"
+      latent_range: [0, 10]  # 潜在空間の範囲
+    
+    - name: "murakami"
+      display_name: "村上隆"
+      latent_range: [10, 20]
+    
+    - name: "banksy"
+      display_name: "バンクシー"
+      latent_range: [20, 30]
+    
+    - name: "teamlab"
+      display_name: "チームラボ"
+      latent_range: [30, 40]
+    
+    - name: "anadol"
+      display_name: "レフィク・アナドル"
+      latent_range: [40, 50]
+    
+    - name: "beeple"
+      display_name: "Beeple"
+      latent_range: [50, 60]
+    
+    - name: "ikeda"
+      display_name: "池田亮司"
+      latent_range: [60, 70]
+    
+    - name: "manabe"
+      display_name: "真鍋大度"
+      latent_range: [70, 80]
+    
+    - name: "mikami"
+      display_name: "三上晴子"
+      latent_range: [80, 90]
+    
+    - name: "kusama"
+      display_name: "草間彌生"
+      latent_range: [90, 100]
+
+audio:
+  beat_detection:
+    enabled: true
+    sensitivity: 0.5
+  
+  spectrum:
+    bands: 32
+    min_freq: 20
+    max_freq: 20000
+    smoothing: 0.5
+
+shaders:
+  default: "basic"
+  available:
+    - name: "basic"
+      path: "shaders/basic.glsl"
+    
+    - name: "feedback"
+      path: "shaders/feedback.glsl"
+    
+    - name: "dots"
+      path: "shaders/dots.glsl"
+    
+    - name: "glitch"
+      path: "shaders/glitch.glsl"
+    
+    - name: "mirror"
+      path: "shaders/mirror.glsl"
+
+midi:
+  apc_mini:
+    pads:
+      - [0, 0, "persona", "ochiai"]
+      - [1, 0, "persona", "murakami"]
+      - [2, 0, "persona", "banksy"]
+      - [3, 0, "persona", "teamlab"]
+      - [4, 0, "persona", "anadol"]
+      - [5, 0, "persona", "beeple"]
+      - [6, 0, "persona", "ikeda"]
+      - [7, 0, "persona", "manabe"]
+      
+      - [0, 1, "shader", "basic"]
+      - [1, 1, "shader", "feedback"]
+      - [2, 1, "shader", "dots"]
+      - [3, 1, "shader", "glitch"]
+      - [4, 1, "shader", "mirror"]
+    
+    faders:
+      - [0, "brightness", 0.0, 2.0]
+      - [1, "contrast", 0.0, 2.0]
+      - [2, "saturation", 0.0, 2.0]
+      - [3, "hue", 0.0, 1.0]
+      - [4, "feedback", 0.0, 0.9]
+      - [5, "zoom", 0.5, 2.0]
+      - [6, "speed", 0.1, 2.0]
+      - [7, "beat_react", 0.0, 1.0]

@@ -1,7 +1,46 @@
-# AIによるリアルタイムVJ/DJシステム：要件定義とプロジェクト提案
+# Synkrosphere
 
-## はじめに: プロジェクトの目的
-本プロジェクトは、**Variational Autoencoder (VAE)** を中心としたリアルタイムVJ/DJシステムの開発を目指します。視覚と音響の同期をAIで自動制御し、従来の複雑なシェーダ操作を不要にすることで、直感的でダイナミックなライブ表現を実現します。 ([Audio-Reactive Visuals using Generative AI: Our First Exploration with VAEs](https://www.asha.fm/post/vae-first-prototype#:~:text=Choosing%20the%20Right%20Model)) ([Audio-Reactive Visuals using Generative AI: Our First Exploration with VAEs](https://www.asha.fm/post/vae-first-prototype#:~:text=VAEs%20are%20built%20using%20an,data%20manipulation%20would%20take%20place)) ユーザーはGitHubからクローンするだけでシステムを即座に利用可能であり、主な利用シーンは小規模クラブでのライブパフォーマンスです。具体的には、**VAEのリアルタイム映像出力（60fps）**をGLSLシェーダーと統合し、MIDIコントローラやiPadによる直感的な操作性を活かした映像演出を行います。以下では、本システムの各要素について要件定義と提案内容を整理します。
+AIによるリアルタイムVJ/DJシステム
+
+## プロジェクト概要
+
+Synkrosphereは、**Variational Autoencoder (VAE)** を中心としたリアルタイムVJ/DJシステムです。視覚と音響の同期をAIで自動制御し、直感的でダイナミックなライブ表現を実現します。
+
+詳細な要件定義とプロジェクト提案は[こちら](docs/project_proposal.md)をご覧ください。
+
+## 現在の進捗状況
+
+- [x] 初期プロジェクト構造の設定
+- [x] Docker環境の構築
+- [x] 基本的なVAEモデルの実装
+- [x] オーディオ解析モジュールの実装
+- [x] 映像レンダリングモジュールの実装
+- [ ] VAEモデルの学習
+- [ ] GLSLシェーダーの追加実装
+- [ ] MIDIコントローラ連携機能の実装
+- [ ] 実データセットを使用した学習と評価
+
+## 環境構築
+
+```bash
+# リポジトリのクローン
+git clone https://github.com/allegorywrite/synkrosphere.git
+cd synkrosphere
+
+# Dockerコンテナのビルドと起動
+docker-compose up -d
+```
+
+## 使用ハードウェア
+
+- **メインPC**: Alienware Aurora R16
+- **タブレット端末**: iPad Pro
+- **オーディオインターフェース**: FOCUSRITE Scarlett Solo (gen. 4)
+- **MIDIコントローラ**: AKAI APC mini MK2
+
+## ライセンス
+
+MIT
 
 ## 1. VAE + GLSLによるリアルタイム映像生成手法
 **参考映像の再現**: 提案システムは、YouTube上の参考映像と類似する表現力を目指し、**VAE**を用いた画像生成と**GLSLシェーダー**によるエフェクトを組み合わせます。VAEは学習データに類似した新規画像フレームを次々と生成でき、**連続した潜在空間の補間**によって滑らかな映像変化を実現します ([Audio-Reactive Visuals using Generative AI: Our First Exploration with VAEs](https://www.asha.fm/post/vae-first-prototype#:~:text=3,to%20form%20a%20dynamic%20video))。これにGLSLでリアルタイム処理されるフィルタ効果や歪みエフェクトを重ねることで、抽象的かつ高品質なビジュアルを60fpsで出力します。例えば、VAEが生成した抽象模様に対しGLSLでオーディオリアクティブなカラーシフトやぼかしを施す、といった構成です。オーディオ解析した**ビートや周波数成分**をVAEの潜在ベクトル遷移に反映させ、音楽に同期した映像変化（ビートに合わせて色や形状が変わるなど）を自動制御します ([Audio-Reactive Visuals using Generative AI: Our First Exploration with VAEs](https://www.asha.fm/post/vae-first-prototype#:~:text=5,reactive%20effect%20to%20the%20video))。このアプローチは、既存研究でも**「音楽の特徴量に応じて潜在空間上を移動し画像間の遷移を制御する」**ことでオーディオリアクティブな映像を生成する手法として示されています ([Audio-Reactive Visuals using Generative AI: Our First Exploration with VAEs](https://www.asha.fm/post/vae-first-prototype#:~:text=5,reactive%20effect%20to%20the%20video))。システムはリアルタイム動作を重視し、VAEモデル推論とシェーダー描画をGPU上で効率的に並列実行します。
